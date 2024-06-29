@@ -1,6 +1,30 @@
 # Injection
 
 ## Inhaltsverzeichniss
+- [Injection](#injection)
+  - [Inhaltsverzeichniss](#inhaltsverzeichniss)
+  - [Einleitung](#einleitung)
+  - [Theoretischer Anblick](#theoretischer-anblick)
+    - [Grundlagen](#grundlagen)
+    - [Arten von Injections](#arten-von-injections)
+      - [SQL Injection (SQLi):](#sql-injection-sqli)
+      - [Cross-Site Scripting (XSS):](#cross-site-scripting-xss)
+      - [Command Injection:](#command-injection)
+      - [LDAP Injection:](#ldap-injection)
+      - [XML Injection:](#xml-injection)
+    - [Warum (und wie) entstehen Injection-Schwachstellen](#warum-und-wie-entstehen-injection-schwachstellen)
+      - [Direkte Einbindung von Benutzereingaben:](#direkte-einbindung-von-benutzereingaben)
+      - [Fehlende oder unzureichende Eingabevalidierung:](#fehlende-oder-unzureichende-eingabevalidierung)
+      - [Unsichere Funktionen und Methoden:](#unsichere-funktionen-und-methoden)
+      - [Unzureichendes Escaping und Sanitizing:](#unzureichendes-escaping-und-sanitizing)
+      - [Komplexe Interaktionen zwischen Systemen:](#komplexe-interaktionen-zwischen-systemen)
+  - [Praktische Beispiele](#praktische-beispiele)
+    - [XSS](#xss)
+      - [Erklärung](#erklärung)
+      - [Advanced](#advanced)
+    - [SQL](#sql)
+      - [Erklärung](#erklärung-1)
+      - [Advanced](#advanced-1)
 
 
 ## Einleitung
@@ -61,13 +85,12 @@ Anwendungen, die Daten zwischen verschiedenen Systemen austauschen (z.B. Webanwe
 Zusammengefasst entstehen Injection-Schwachstellen durch die Kombination von unsicheren Programmierpraktiken, unzureichender Validierung und unsachgemäßer Handhabung von Benutzereingaben. Um diese Schwachstellen zu vermeiden, sollten Entwickler bewährte Sicherheitspraktiken anwenden, wie die Verwendung parametrisierter Abfragen, gründliche Eingabevalidierung und das Escaping von speziellen Zeichen.
 
 ## Praktische Beispiele
-### DVWA
-DVWA (Damn Vulnerable Web Application) ist eine bewusst unsicher gestaltete Web-Applikation. Es wird eine Vielzahl von Sicherheitslücken simuliert, um als Übungsplattform für Penetrationstests zu dienen.
+Die Praktischen Beispiele werden an DVWA gezeigt. DVWA (Damn Vulnerable Web Application) ist eine bewusst unsicher gestaltete Web-Applikation. Es wird eine Vielzahl von Sicherheitslücken simuliert, um als Übungsplattform für Penetrationstests zu dienen.
 
-#### XSS
+### XSS
 DVWA bietet verschiedene simulierte Arten von XSS-Angriffen an. In diesem Text werden wir uns die DOM-basierte XSS-Schwachstelle genauer ansehen.
 
-##### Erklärung
+#### Erklärung
 Eine DOM-XSS Schwachstelle entsteht, wenn JavaScript-Code auf der Clientseite manipuliert wird, um schädlichen Code auszuführen. Dies geschieht direkt im Document Object Model (DOM) des Browsers. In DVWA wird dies durch ein Dropdown-Menü zur Auswahl einer Sprache demonstriert.
 
 ![Bild von DVWA](./imgs/xss-dom-dropdown.png)
@@ -80,7 +103,7 @@ http://127.0.0.1:4280/vulnerabilities/xss_d/?default=%3Cscript%3Ealert(%27test%2
 
 ![alert auf DVWA](./imgs/xss-dom-alert.png)
 
-##### Advanced
+#### Advanced
 Da wir JavaScript-Tags einbinden können auf dem DOM, können wir auch einen anderen Server ansprechen. Dafür müssen wir zuerst einen Server starten. Wir können recht einfach mithilfe von Docker und HTTP-Server von Apache einen lokalen Server starten. Danach müssen wir nur noch eine JavaScript Datei hinzufügen, die folgenden Code ausführt:
 ```js
 function getimg() {
@@ -100,12 +123,10 @@ Dadurch bekommen wir in den Logs die folgende Meldung:
 
 Hier sehen wir auch die SessionID von PHP. Diese könnten wir nun Manuell in einem Browser setzen und den Account übernehmen.
 
-#### SQL
+### SQL
 DVWA bietet auch hier verschiedene simulierte Arten von SQL-Injection an. Wir werden uns sowohl die klassische als auch die blinde SQL-Injection ansehen.
 
-##### Klassische SQL-Injection
-
-###### Erklärung
+#### Erklärung
 
 In DVWA gibt es ein simples Eingabefeld, welches Benutzern ermöglicht, eine Benutzer-ID einzugeben, um Informationen aus der Datenbank abzurufen.
 
@@ -131,7 +152,7 @@ SELECT first_name, last_name FROM users WHERE user_id = '1' OR '1'='1';
 
 Da die Bedingung OR '1'='1' immer wahr ist, gibt die Abfrage alle Datensätze in der Tabelle users zurück. Auf diese Weise kann ein Angreifer Zugriff auf sämtliche Benutzerdaten erlangen, die in der Datenbank gespeichert sind.
 
-###### Advanced
+#### Advanced
 Jetzt da wir wissen wie die SQL-Befehle aufgebaut werden, können wir dies weiter nutzen um die Passwörter von jedem User herauszulesen.
 
 Um damit zu beginnen, müssen wir zuerst die Datenbank Struktur analysieren, um genauere Befehle zu erstellen. Mithilfe von der MariaDB Dokumentation, finden wir heraus, dass alle Tabellennamen gespeichert werden unter 'information_schema.COLUMNS'. Wir können diese Daten herauslesen, indem wir folgendes in das Input-Feld eingeben:
